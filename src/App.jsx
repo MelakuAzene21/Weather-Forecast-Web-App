@@ -3,6 +3,13 @@ import axios from 'axios';
 import SearchBar from './components/SearchBar';
 import CurrentWeather from './components/CurrentWeather';
 import Forecast from './components/Forecast';
+import HourlyForecast from './components/HourlyForecast';
+import WeatherDetails from './components/WeatherDetails';
+import WeatherMap from './components/WeatherMap';
+import WeatherAlerts from './components/WeatherAlerts';
+import FavoriteLocations from './components/FavoriteLocations';
+import WeatherComparison from './components/WeatherComparison';
+import AirQuality from './components/AirQuality';
 import LocationButton from './components/LocationButton';
 import './index.css';
 
@@ -14,6 +21,7 @@ function App() {
   const [units, setUnits] = useState('metric'); // 'metric' for Celsius, 'imperial' for Fahrenheit
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState('current');
 
   const fetchWeather = useCallback(
     async (location) => {
@@ -73,8 +81,15 @@ function App() {
   };
 
   return (
-    <div className="bg-cloudy bg-cover bg-center bg-fixed min-h-screen bg-white p-4">
+    <div className="bg-cloudy bg-cover bg-center bg-fixed min-h-screen bg-white p-2 md:p-4">
       <div className="max-w-4xl mx-auto p-4 bg-transparent rounded-lg shadow-lg">
+        <div className="text-center mb-6">
+          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 drop-shadow-lg">
+            Weather Pro
+          </h1>
+          <p className="text-white drop-shadow-md">Your comprehensive weather companion</p>
+        </div>
+
         <SearchBar fetchWeather={fetchWeather} fetchCitySuggestions={fetchCitySuggestions} />
         <LocationButton fetchWeather={fetchWeather} />
 
@@ -86,14 +101,90 @@ function App() {
           </select>
         </div>
 
+        {/* Navigation Tabs */}
+        {weatherData && (
+          <div className="bg-blue-500 bg-opacity-30 p-2 rounded-lg mt-4">
+            <div className="flex flex-wrap gap-2 justify-center">
+              {[
+                { id: 'current', label: 'Current' },
+                { id: 'hourly', label: 'Hourly' },
+                { id: 'forecast', label: '4-Day' },
+                { id: 'details', label: 'Details' },
+                { id: 'map', label: 'Map' },
+                { id: 'air', label: 'Air Quality' },
+                { id: 'compare', label: 'Compare' },
+                { id: 'favorites', label: 'Favorites' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === tab.id
+                      ? 'bg-blue-600 text-white'
+                      : 'bg-white bg-opacity-50 text-black hover:bg-opacity-70'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {loading ? (
-          <p>Loading...</p>
+          <div className="text-center py-8">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+            <p className="mt-2 text-white">Loading weather data...</p>
+          </div>
         ) : error ? (
-          <p className="text-red-500">{error}</p>
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
+            <p>{error}</p>
+          </div>
         ) : (
           <>
-            {weatherData && <CurrentWeather weather={weatherData} units={units} />}
-            {forecastData && <Forecast forecast={forecastData} units={units} />}
+            <WeatherAlerts weatherData={weatherData} />
+            
+            {weatherData && activeTab === 'current' && (
+              <CurrentWeather weather={weatherData} units={units} />
+            )}
+            
+            {forecastData && activeTab === 'hourly' && (
+              <HourlyForecast forecast={forecastData} units={units} />
+            )}
+            
+            {forecastData && activeTab === 'forecast' && (
+              <Forecast forecast={forecastData} units={units} />
+            )}
+            
+            {weatherData && activeTab === 'details' && (
+              <WeatherDetails weather={weatherData} units={units} />
+            )}
+            
+            {weatherData && activeTab === 'map' && (
+              <WeatherMap weatherData={weatherData} />
+            )}
+            
+            {weatherData && activeTab === 'air' && (
+              <AirQuality weatherData={weatherData} />
+            )}
+            
+            {activeTab === 'compare' && (
+              <WeatherComparison units={units} />
+            )}
+            
+            {activeTab === 'favorites' && (
+              <FavoriteLocations 
+                fetchWeather={fetchWeather} 
+                currentLocation={weatherData?.name}
+              />
+            )}
+            
+            {!weatherData && !loading && (
+              <div className="text-center py-8 text-white">
+                <p className="text-lg mb-2">Welcome to Weather Pro!</p>
+                <p>Search for a city or use your current location to get started.</p>
+              </div>
+            )}
           </>
         )}
       </div>

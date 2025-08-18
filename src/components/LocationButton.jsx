@@ -12,7 +12,10 @@ const LocationButton = ({ fetchWeather }) => {
     };
 
     return (
-        <button className="bg-blue-500 bg-opacity-50 text-white p-2 rounded-lg" onClick={handleLocation}>
+        <button 
+            className="bg-blue-500 bg-opacity-50 text-white p-3 rounded-lg hover:bg-opacity-70 transition-colors font-medium w-full md:w-auto" 
+            onClick={handleLocation}
+        >
             Use Current Location
         </button>
     );
