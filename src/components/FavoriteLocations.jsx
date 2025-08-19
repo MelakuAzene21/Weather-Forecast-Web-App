@@ -21,12 +21,14 @@ const FavoriteLocations = ({ fetchWeather, currentLocation }) => {
   };
 
   const addToFavorites = () => {
-    if (!newLocation.trim()) return;
-    
+    const cleaned = newLocation.trim();
+    if (!cleaned) return;
+    if (favorites.some(f => f.name.toLowerCase() === cleaned.toLowerCase())) return;
+
     const newFavorite = {
       id: Date.now(),
-      name: newLocation.trim(),
-      query: `q=${newLocation.trim()}`
+      name: cleaned,
+      query: `q=${cleaned}`
     };
 
     const updatedFavorites = [...favorites, newFavorite];
@@ -37,6 +39,7 @@ const FavoriteLocations = ({ fetchWeather, currentLocation }) => {
 
   const addCurrentLocation = () => {
     if (!currentLocation) return;
+    if (favorites.some(f => f.name.toLowerCase() === currentLocation.toLowerCase())) return;
 
     const newFavorite = {
       id: Date.now(),

@@ -22,6 +22,18 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState('current');
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('weatherDarkMode');
+    return saved ? JSON.parse(saved) : false;
+  });
+  const [recentSearches, setRecentSearches] = useState(() => {
+    try {
+      const saved = localStorage.getItem('weatherRecentSearches');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
 
   const fetchWeather = useCallback(
     async (location) => {
@@ -74,28 +86,62 @@ function App() {
 
   const fetchCitySuggestions = async (inputValue) => {
     const response = await fetch(
-      `http://api.openweathermap.org/geo/1.0/direct?q=${inputValue}&limit=5&appid=${API_KEY}`
+      `https://api.openweathermap.org/geo/1.0/direct?q=${encodeURIComponent(inputValue)}&limit=10&appid=${API_KEY}`
     );
     const data = await response.json();
     return data.map((city) => `${city.name}, ${city.country}`);
   };
 
+  // Theme handling
+  useEffect(() => {
+    const root = document.documentElement;
+    if (darkMode) {
+      root.classList.add('dark');
+    } else {
+      root.classList.remove('dark');
+    }
+    localStorage.setItem('weatherDarkMode', JSON.stringify(darkMode));
+  }, [darkMode]);
+
+  const handleSearched = (cityName) => {
+    if (!cityName) return;
+    setRecentSearches((prev) => {
+      const next = [cityName, ...prev.filter((c) => c.toLowerCase() !== cityName.toLowerCase())].slice(0, 5);
+      localStorage.setItem('weatherRecentSearches', JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
-    <div className="bg-cloudy bg-cover bg-center bg-fixed min-h-screen bg-white p-2 md:p-4">
-      <div className="max-w-4xl mx-auto p-4 bg-transparent rounded-lg shadow-lg">
-        <div className="text-center mb-6">
-          <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 drop-shadow-lg">
-            Weather Pro
-          </h1>
-          <p className="text-white drop-shadow-md">Your comprehensive weather companion</p>
+    <div className="bg-cloudy bg-cover bg-center bg-fixed min-h-screen p-2 md:p-4">
+      <div className="max-w-4xl mx-auto p-4 bg-white/40 dark:bg-black/40 backdrop-blur rounded-lg shadow-lg">
+        <div className="flex items-start justify-between mb-6">
+          <div className="text-center flex-1">
+            <h1 className="text-3xl md:text-4xl font-bold text-black dark:text-white mb-2 drop-shadow-lg">
+              Weather Pro
+            </h1>
+            <p className="text-black dark:text-white drop-shadow-md">Your comprehensive weather companion</p>
+          </div>
+          <button
+            onClick={() => setDarkMode((d) => !d)}
+            aria-label="Toggle theme"
+            className="ml-3 px-3 py-2 rounded-lg text-sm font-medium bg-white/60 dark:bg-black/60 text-black dark:text-white hover:bg-white/80 dark:hover:bg-black/80"
+          >
+            {darkMode ? 'Light' : 'Dark'}
+          </button>
         </div>
 
-        <SearchBar fetchWeather={fetchWeather} fetchCitySuggestions={fetchCitySuggestions} />
+        <SearchBar 
+          fetchWeather={fetchWeather} 
+          fetchCitySuggestions={fetchCitySuggestions}
+          recentSearches={recentSearches}
+          onSearched={handleSearched}
+        />
         <LocationButton fetchWeather={fetchWeather} />
 
-        <div className="bg-blue-500 bg-opacity-10 p-4 rounded-lg">
-          <label htmlFor="units" className="text-black">Units: </label>
-          <select id="units" value={units} onChange={handleUnitChange} className="rounded-lg">
+        <div className="bg-blue-500 bg-opacity-10 p-4 rounded-lg mt-3">
+          <label htmlFor="units" className="text-black dark:text-white mr-2">Units:</label>
+          <select id="units" value={units} onChange={handleUnitChange} className="rounded-lg px-2 py-1">
             <option value="metric">Celsius</option>
             <option value="imperial">Fahrenheit</option>
           </select>
@@ -133,8 +179,8 @@ function App() {
 
         {loading ? (
           <div className="text-center py-8">
-            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            <p className="mt-2 text-white">Loading weather data...</p>
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-black dark:border-white"></div>
+            <p className="mt-2 text-black dark:text-white">Loading weather data...</p>
           </div>
         ) : error ? (
           <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mt-4">
@@ -180,7 +226,7 @@ function App() {
             )}
             
             {!weatherData && !loading && (
-              <div className="text-center py-8 text-white">
+              <div className="text-center py-8 text-black dark:text-white">
                 <p className="text-lg mb-2">Welcome to Weather Pro!</p>
                 <p>Search for a city or use your current location to get started.</p>
               </div>

@@ -40,14 +40,26 @@ const WeatherMap = ({ weatherData }) => {
       </div>
 
       <div className="relative w-full h-64 rounded-lg overflow-hidden">
-        <img
-          src={`https://tile.openweathermap.org/map/${mapType}_new/5/${Math.floor(lon)}_${Math.floor(lat)}.png?appid=${API_KEY}`}
-          alt={`${mapTypes[mapType]} Map`}
-          className="w-full h-full object-cover"
-          onError={(e) => {
-            e.target.src = `https://via.placeholder.com/400x200/87CEEB/000000?text=${mapTypes[mapType]}+Map+Unavailable`;
-          }}
-        />
+        {/* OpenWeather tile API expects z/x/y in Web Mercator tiling system. Approximate tile from lat/lon */}
+        {(() => {
+          const z = 5;
+          const x = Math.floor(((lon + 180) / 360) * Math.pow(2, z));
+          const latRad = (lat * Math.PI) / 180;
+          const y = Math.floor(
+            (1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * Math.pow(2, z)
+          );
+          const src = `https://tile.openweathermap.org/map/${mapType}_new/${z}/${x}/${y}.png?appid=${API_KEY}`;
+          return (
+            <img
+              src={src}
+              alt={`${mapTypes[mapType]} Map`}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = `https://via.placeholder.com/400x200/87CEEB/000000?text=${mapTypes[mapType]}+Map+Unavailable`;
+              }}
+            />
+          );
+        })()}
       </div>
     </div>
   );

@@ -68,6 +68,12 @@ const HourlyForecast = ({ forecast, units }) => {
                     <span>{Math.round(hour.visibility / 1000)}km</span>
                   </div>
                 )}
+                {typeof hour.pop === 'number' && (
+                  <div className="flex items-center justify-center gap-1">
+                    <span>Precip</span>
+                    <span>{Math.round(hour.pop * 100)}%</span>
+                  </div>
+                )}
               </div>
             </div>
           ))}

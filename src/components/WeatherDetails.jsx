@@ -22,6 +22,9 @@ const WeatherDetails = ({ weather, units }) => {
     return directions[Math.round(degrees / 22.5) % 16];
   };
 
+  const uvIndex = weather?.uvi; // not in current response, placeholder if merged in future
+  const dewPoint = weather?.main?.dew_point; // OpenWeather current API has dew_point in OneCall; not in basic endpoint
+
   const details = [
     {
       icon: faThermometerHalf,
@@ -59,6 +62,22 @@ const WeatherDetails = ({ weather, units }) => {
       value: `${Math.round(weather.main.temp_min)}°${units === 'metric' ? 'C' : 'F'}`
     }
   ];
+
+  if (typeof uvIndex === 'number') {
+    details.push({
+      icon: faSun,
+      label: 'UV Index',
+      value: uvIndex.toFixed(1)
+    });
+  }
+
+  if (typeof dewPoint === 'number') {
+    details.push({
+      icon: faThermometerHalf,
+      label: 'Dew Point',
+      value: `${Math.round(dewPoint)}°${units === 'metric' ? 'C' : 'F'}`
+    });
+  }
 
   return (
     <div className="bg-blue-500 bg-opacity-30 p-4 rounded-lg mt-4">
