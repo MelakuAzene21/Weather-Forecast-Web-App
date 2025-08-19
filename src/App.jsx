@@ -112,8 +112,23 @@ function App() {
     });
   };
 
+  const getBackgroundClass = () => {
+    if (!weatherData) return 'bg-cloudy';
+    const isNight = weatherData.sys && weatherData.sys.sunset && weatherData.sys.sunrise
+      ? (Date.now() / 1000 < weatherData.sys.sunrise || Date.now() / 1000 > weatherData.sys.sunset)
+      : false;
+    const main = weatherData.weather?.[0]?.main?.toLowerCase() || '';
+    if (isNight) return 'bg-weather-night';
+    if (main.includes('thunder')) return 'bg-weather-thunder';
+    if (main.includes('rain') || main.includes('drizzle')) return 'bg-weather-rain';
+    if (main.includes('snow')) return 'bg-weather-snow';
+    if (main.includes('cloud')) return 'bg-weather-clouds';
+    if (main.includes('mist') || main.includes('fog') || main.includes('haze')) return 'bg-weather-mist';
+    return 'bg-weather-clear';
+  };
+
   return (
-    <div className="bg-cloudy bg-cover bg-center bg-fixed min-h-screen p-2 md:p-4">
+    <div className={`weather-bg ${getBackgroundClass()} bg-cover bg-center bg-fixed min-h-screen p-2 md:p-4`}>
       <div className="max-w-4xl mx-auto p-4 bg-white/40 dark:bg-black/40 backdrop-blur rounded-lg shadow-lg">
         <div className="flex items-start justify-between mb-6">
           <div className="text-center flex-1">

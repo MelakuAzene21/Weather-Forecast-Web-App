@@ -2,3 +2,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Global font */
+html {
+  font-family: theme('fontFamily.inter');
+}
+
+/* Smooth background transitions */
+.weather-bg {
+  transition: background-image 300ms ease, background-color 300ms ease;
+}
